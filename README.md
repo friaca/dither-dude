@@ -1,0 +1,2 @@
+# dither-dude
+Dithering utility
