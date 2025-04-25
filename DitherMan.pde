@@ -11,6 +11,13 @@ PGraphics buffer;
 Path originalImagePath;
 Random rng = new Random();
 boolean imageNeedsBuffer = false;
+boolean serpentineMode = false;
+String[] availableAlgorithms = new String[] {
+  "floyd steinberg", 
+  "jjn",
+  "stucki",
+  "burkes"
+};
 
 void setup() {
   size(1200, 800, P2D);
@@ -51,7 +58,7 @@ void saveImage() {
   buffer.save(outputPath);
 }
 
-void ditherImage() {
+void ditherImage(String algorithm, boolean serpetineMode, float scale) {
   color[] palette = {
     color(0, 0, 0),
     color(255, 255, 255),
@@ -60,10 +67,21 @@ void ditherImage() {
     color(0, 0, 255)
   };
 
-  //PImage dithered = DithererFloydSteinberg.dither(this, originalImage, palette);
-  PImage dithered = DithererFloydSteinbergBW.dither(this, originalImage, 128, false);
+  PImage dithered = null;
 
-  updateBuffer(dithered);
+  // fazer if na mão assim é foda
+  if (algorithm.equals("floyd steinberg")) {
+    dithered = DithererFloydSteinbergBW.dither(this, originalImage, serpentineMode);
+  } else if (algorithm.equals("jjn")) {
+    dithered = DithererJJNBW.dither(this, originalImage, scale);
+  } else if (algorithm.equals("stucki")) {
+    dithered = DithererStuckiBW.dither(this, originalImage, scale);
+  } else if (algorithm.equals("burkes")) {
+    dithered = DithererBurkesBW.dither(this, originalImage, scale);
+  }
+
+  if (dithered != null)
+    updateBuffer(dithered);
 }
 
 void updateBuffer(PImage image) {
@@ -97,8 +115,16 @@ void draw() {
   background(0);
 
   boolean selectImageClicked = gui.button("select image");
+  String algorithm = gui.radio("algorithm", availableAlgorithms);
+  int scale = gui.sliderInt("scale", 1);
+  boolean resetScaleClicked = gui.button("reset scale");
+  boolean serpetineMode = gui.toggle("serpentine");
   boolean ditherImageClicked = gui.button("do it");
   boolean saveImageClicked = gui.button("save image");
+
+  if (resetScaleClicked) {
+    gui.sliderSet("scale", 10);
+  }
 
   if (selectImageClicked) {
     selectInput("Select an image", "imageSelected");
@@ -114,7 +140,8 @@ void draw() {
   }
 
   if (ditherImageClicked && originalImage != null && !imageNeedsBuffer) {
-    ditherImage();
+    float parsedScale = scale / 10.0f;
+    ditherImage(algorithm, serpetineMode, parsedScale);
   }
 
   if (buffer != null) {

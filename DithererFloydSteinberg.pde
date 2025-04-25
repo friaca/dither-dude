@@ -1,4 +1,4 @@
-static class DithererFloydSteinberg {
+static class DithererFloydSteinberg2 {
 
   static PImage dither(PApplet app, PImage img, color[] palette) {
     img.loadPixels();
